@@ -1,3 +1,4 @@
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
 module.exports = {
@@ -11,4 +12,5 @@ module.exports = {
   watchOptions: {
     aggregateTimeout: 200,
   },
+  plugins: [new HtmlWebpackPlugin()],
 };

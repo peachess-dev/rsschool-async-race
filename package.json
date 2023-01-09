@@ -15,6 +15,7 @@
   "devDependencies": {
     "eslint": "^8.30.0",
     "eslint-config-airbnb": "^19.0.4",
+    "html-webpack-plugin": "^5.5.0",
     "json-server": "^0.17.1",
     "svg-inline-loader": "^0.8.2",
     "webpack": "^5.75.0",
