@@ -1,10 +1,10 @@
 //import layout
-import AppLayout from "./components/layout.js";
+import AppLayout from "./src/components/layout.js";
 const layout = new AppLayout();
 layout.initLayout();
 
 //import garage view
-import GarageView from "./views/garage.js";
+import GarageView from "./src/views/garage.js";
 const garageView = new GarageView();
 async function displayGarage() {
   await garageView.init();
@@ -12,10 +12,11 @@ async function displayGarage() {
 displayGarage();
 
 //add a car
-const addCar = document.querySelector("#addCar");
+const addCar = document.getElementById("addCar");
 const addCarName = addCar.querySelector(".modify_car_name");
 const addCarColor = addCar.querySelector(".modify_car_color");
-addCar.addEventListener("click", () => {
+const addCarBtn = document.getElementById("addCarBtn");
+addCarBtn.addEventListener("click", () => {
   const car = { name: addCarName.value, color: addCarColor.value };
   garageView.addCar(car);
 });
@@ -27,7 +28,7 @@ addCar.addEventListener("click", () => {
 //reset race
 
 //generate random cars
-const generateBtn = document.querySelector("#generateBtn");
+const generateBtn = document.getElementById("generateBtn");
 generateBtn.addEventListener("click", () => {
   garageView.addRandomCars().then(() => {
     checkPrevBtnStatus();
@@ -36,7 +37,7 @@ generateBtn.addEventListener("click", () => {
 });
 
 //go to the next page
-const nextBtn = document.querySelector("#next_btn");
+const nextBtn = document.getElementById("next_btn");
 nextBtn.addEventListener("click", async () => {
   garageView.nextPage();
   await garageView.init();
@@ -45,7 +46,7 @@ nextBtn.addEventListener("click", async () => {
 });
 
 //go to the previous page
-const prevBtn = document.querySelector("#prev_btn");
+const prevBtn = document.getElementById("prev_btn");
 prevBtn.disabled = true;
 prevBtn.addEventListener("click", async () => {
   garageView.previousPage();

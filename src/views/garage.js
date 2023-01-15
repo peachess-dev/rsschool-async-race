@@ -31,8 +31,8 @@ export default class GarageView extends PaginationView {
     try {
       allCars = await getCars();
       this.totalCars = allCars.length;
-    } catch (err) {
-      console.log("Can't count this.cars, I'm blind", err);
+    } catch (error) {
+      console.log("Error counting cars", error);
     }
   }
 
@@ -43,7 +43,7 @@ export default class GarageView extends PaginationView {
       httpParams.append("_page", this.currentPage);
       this.cars = await getCars(httpParams);
     } catch (error) {
-      console.error("Error fetching cars!", error);
+      console.log("Error fetching cars!", error);
     }
   }
 
@@ -142,7 +142,7 @@ export default class GarageView extends PaginationView {
   async addRandomCars() {
     const newCars = this.generateRandomCars(10);
     await Promise.all(newCars.map((car) => createCar(car)));
-    this.init();
+    return this.init();
   }
 
   generateRandomCars(numCars) {
