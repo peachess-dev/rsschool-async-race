@@ -41,6 +41,9 @@ export async function startCar(httpParams) {
   if (httpParams) url += `?${httpParams}`;
   return fetch(url, {
     method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
   }).then((res) => {
     console.log(res);
     return res.json();
@@ -51,10 +54,17 @@ export async function startCar(httpParams) {
 export async function driveCar(httpParams) {
   let url = engineURL;
   if (httpParams) url += `?${httpParams}`;
-
   return fetch(url, {
     method: "PATCH",
-  }).then((res) => {
-    return res.json();
-  });
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .catch((error) => {
+      console.error(`Error starting car: ${error}`);
+      throw error;
+    });
 }

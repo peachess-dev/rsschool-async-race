@@ -220,7 +220,9 @@ export default class GarageView extends PaginationView {
       car.velocity = velocity;
       car.distance = distance;
       this.startCarDriving(car);
-      this.moveCar(car);
+      if (car.status !== "stopped") {
+        this.moveCar(car);
+      }
     } catch (error) {
       console.error("Error starting or stopping car engine!", error);
     }
@@ -228,15 +230,20 @@ export default class GarageView extends PaginationView {
 
   async startCarDriving(car) {
     // Set car status to drive
+    car.status = "drive";
     try {
       const httpParams = new URLSearchParams();
       httpParams.append("id", car.id);
       httpParams.append("status", car.status);
       const response = await driveCar(httpParams);
+      // Set car status to stopped
+      if (response.status === 500) {
+        car.status = "stopped";
+        console.error("The car has stopped!", error);
+      }
       console.log("Drive car " + car.name, response);
     } catch (error) {
-      // Set car status to stopped
-      console.error("The car has stopped!", error);
+      console.error("Error starting car driving!", error);
     }
   }
 
@@ -244,18 +251,17 @@ export default class GarageView extends PaginationView {
     const carContainer = document.querySelector(`#car_${car.id} .car-img`);
     const carContainerWidth = carContainer.getBoundingClientRect().width;
     const carImg = carContainer.querySelector("i");
-    const raceDistance = carContainer.getBoundingClientRect().width;
+    const raceDistance = carContainerWidth;
     const carSpeed = (car.velocity * carContainerWidth) / car.distance;
     let carPosition = 0;
-    let carPositionId = setInterval(wroomWroom, 1);
-    function wroomWroom() {
+    let carPositionId = setInterval(() => {
       if (carPosition >= raceDistance) {
-        clearInterval(carPositionId);
-        return;
+        return clearInterval(carPositionId);
       } else {
         carPosition += carSpeed;
         carImg.style.marginLeft = `${carPosition}px`;
       }
-    }
+    }, 1);
+    return carPositionId;
   }
 }
