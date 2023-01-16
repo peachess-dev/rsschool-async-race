@@ -33,16 +33,16 @@ export async function deleteCar(car) {
 }
 
 // ENGINE API //
-const engineURL = "http://127.0.0.1:3000/engine}";
+const engineURL = "http://127.0.0.1:3000/engine";
 
 // Starts or stops engine of specified car, and returns it's actual velocity and distance.
 export async function startCar(httpParams) {
   let url = engineURL;
   if (httpParams) url += `?${httpParams}`;
-
   return fetch(url, {
     method: "PATCH",
   }).then((res) => {
+    console.log(res);
     return res.json();
   });
 }

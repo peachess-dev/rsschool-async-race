@@ -134,3 +134,8 @@ button:disabled {
   cursor: none;
   background: rgba(174, 132, 26, 0.3);
 }
+
+.fa-car-side {
+  position: relative;
+  font-size: 3rem;
+}

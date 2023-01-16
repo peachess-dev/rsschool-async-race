@@ -5,6 +5,7 @@ import {
   updateCar,
   deleteCar,
   startCar,
+  driveCar,
 } from "../components/helpers.js";
 import { Car } from "../models/car.js";
 
@@ -67,24 +68,33 @@ export default class GarageView extends PaginationView {
   renderCar(car) {
     let carDiv = document.createElement("div");
     carDiv.className = "car_div";
+    carDiv.id = `car_${car.id}`;
 
     let carDivTop = document.createElement("div");
     carDivTop.className = "car_div__top";
     let carName = document.createElement("h3");
     carName.className = "car_name";
     carName.innerHTML = `${car.name}`;
+
     let carRun = document.createElement("button");
     carRun.innerHTML = '<i class="fa-solid fa-play"></i>';
-    //run clicklistener
-    //carRun.addEventListener("click", () => this.startCar());
-    carRun.addEventListener("click", () => startCar(car));
+    carRun.addEventListener("click", () => {
+      car.status = "started";
+      this.startOrStopCarEngine(car);
+    });
+
     let carStop = document.createElement("button");
     carStop.innerHTML = '<i class="fa-solid fa-stop"></i>';
-    //stopclick listener
+    carStop.addEventListener("click", () => {
+      car.status = "stopped";
+      this.startOrStopCarEngine(car);
+    });
+
     let carUpdate = document.createElement("button");
     carUpdate.className = "car_update";
     carUpdate.innerHTML = "update";
     carUpdate.addEventListener("click", () => this.updateCar(car));
+
     let carRemove = document.createElement("button");
     carRemove.className = "car_remove";
     carRemove.innerHTML = "remove";
@@ -95,20 +105,24 @@ export default class GarageView extends PaginationView {
 
     let carDivBody = document.createElement("div");
     carDivBody.className = "car_div__body";
-    let carImg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    let carImgSrc = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "use"
-    );
-    carImgSrc.setAttributeNS(
-      "http://www.w3.org/1999/xlink",
-      "href",
-      "../assets/img/car1.svg#car1"
-    );
-    carImgSrc.setAttribute("width", 150);
-    carImgSrc.setAttribute("height", 150);
-    carImgSrc.setAttribute("fill", `${car.color}`);
-    carImg.appendChild(carImgSrc);
+    // let carImg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    // let carImgSrc = document.createElementNS(
+    //   "http://www.w3.org/2000/svg",
+    //   "use"
+    // );
+    // carImgSrc.setAttributeNS(
+    //   "http://www.w3.org/1999/xlink",
+    //   "href",
+    //   "../assets/img/car1.svg#car1"
+    // );
+    // carImgSrc.setAttribute("width", 150);
+    // carImgSrc.setAttribute("height", 150);
+    // carImgSrc.setAttribute("fill", `${car.color}`);
+    // carImg.appendChild(carImgSrc);
+    let carImg = document.createElement("div");
+    carImg.className = "car-img";
+    carImg.innerHTML = '<i class="fa-solid fa-car-side"></i>';
+    carImg.style.color = `${car.color}`;
     carDivBody.append(carImg);
 
     let carDivBottom = document.createElement("div");
@@ -201,25 +215,47 @@ export default class GarageView extends PaginationView {
       httpParams.append("status", car.status);
       // Add car class with status
       const { velocity, distance } = await startCar(httpParams);
-
+      console.log(`${car.name} velocity: ${velocity} - distance: ${distance}`);
       // Add velocity and Distance to car as well
+      car.velocity = velocity;
+      car.distance = distance;
+      this.startCarDriving(car);
+      this.moveCar(car);
     } catch (error) {
       console.error("Error starting or stopping car engine!", error);
     }
   }
 
-  async driveCar(car) {
-    // set status of car to drive
-
+  async startCarDriving(car) {
+    // Set car status to drive
     try {
       const httpParams = new URLSearchParams();
-      httpParams.append("id", Car.id);
-      httpParams.append("status", Car.status);
+      httpParams.append("id", car.id);
+      httpParams.append("status", car.status);
       const response = await driveCar(httpParams);
-      console.log("Drive car " + Car.name, response);
+      console.log("Drive car " + car.name, response);
     } catch (error) {
-      console.error("The car has stopped!", error);
       // Set car status to stopped
+      console.error("The car has stopped!", error);
+    }
+  }
+
+  moveCar(car) {
+    const carContainer = document.querySelector(`#car_${car.id} .car-img`);
+    const carContainerWidth = carContainer.getBoundingClientRect().width;
+    const carImg = carContainer.querySelector("i");
+    const raceDistance = carContainer.getBoundingClientRect().width;
+    const carSpeed = (car.velocity * carContainerWidth) / car.distance;
+    let carPosition = 0;
+    let carPositionId = setInterval(wroomWroom, 1);
+    function wroomWroom() {
+      if (carPosition >= raceDistance) {
+        clearInterval(carPositionId);
+        return;
+      } else {
+        carPosition += carSpeed;
+        carImg.style.marginLeft = `${carPosition}px`;
+      }
     }
   }
 }

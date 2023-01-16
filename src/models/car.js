@@ -1,6 +1,9 @@
 export class Car {
-  constructor(id, status) {
+  constructor() {
     this.id = id;
     this.status = status;
+    this.name = "";
+    this.color = "";
+    this.velocity = 0;
   }
 }
