@@ -4,11 +4,10 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: ["airbnb"],
+  extends: ["eslint: recommended", "airbnb-base"],
   overrides: [],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  rules: {},
 };
