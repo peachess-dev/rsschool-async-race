@@ -33,7 +33,7 @@ export default class GarageView extends PaginationView {
       allCars = await getCars();
       this.totalCars = allCars.length;
     } catch (error) {
-      console.log("Error counting cars", error);
+      console.log("Error counting cars!", error);
     }
   }
 
@@ -143,18 +143,25 @@ export default class GarageView extends PaginationView {
   }
 
   async updateCar(car) {
-    await updateCar(car);
-    this.init();
+    try {
+      await updateCar(car);
+      this.init();
+    } catch (err) {
+      console.log("Error with updateCar()", err);
+    }
   }
 
   async deleteCar(car) {
-    console.log("remove", car);
-    await deleteCar(car);
-    this.init();
+    try {
+      await deleteCar(car);
+      this.init();
+    } catch (err) {
+      console.log("Error with deleteCar()", err);
+    }
   }
 
   async addRandomCars() {
-    const newCars = this.generateRandomCars(10);
+    const newCars = this.generateRandomCars(100);
     await Promise.all(newCars.map((car) => createCar(car)));
     return this.init();
   }
@@ -210,18 +217,24 @@ export default class GarageView extends PaginationView {
 
   async startOrStopCarEngine(car) {
     try {
+      // Add car class with status
       const httpParams = new URLSearchParams();
       httpParams.append("id", car.id);
       httpParams.append("status", car.status);
-      // Add car class with status
+      // Receive the response with the car velocity and distance
       const { velocity, distance } = await startCar(httpParams);
       console.log(`${car.name} velocity: ${velocity} - distance: ${distance}`);
-      // Add velocity and Distance to car as well
       car.velocity = velocity;
       car.distance = distance;
-      this.startCarDriving(car);
+      // Start to drive the car
+      this.moveCar(car);
+      // Stop the car if it's status changed to 'stopped'
+      let setCarPositionId = new Map();
+      setCarPositionId.set(car.id, this.moveCar(car));
       if (car.status !== "stopped") {
-        this.moveCar(car);
+        await this.startCarDriving(car);
+      } else {
+        clearInterval(setCarPositionId.get(car.id));
       }
     } catch (error) {
       console.error("Error starting or stopping car engine!", error);
@@ -229,33 +242,35 @@ export default class GarageView extends PaginationView {
   }
 
   async startCarDriving(car) {
-    // Set car status to drive
+    // Set car status to 'drive'
     car.status = "drive";
     try {
       const httpParams = new URLSearchParams();
       httpParams.append("id", car.id);
       httpParams.append("status", car.status);
       const response = await driveCar(httpParams);
-      // Set car status to stopped
+      // Change car status to 'stopped' if 500 code was received
       if (response.status === 500) {
         car.status = "stopped";
         console.error("The car has stopped!", error);
       }
       console.log("Drive car " + car.name, response);
     } catch (error) {
-      console.error("Error starting car driving!", error);
+      console.error("Error starting car driving!");
     }
   }
 
   moveCar(car) {
+    // Define the race distance and car's speed according to the layout
     const carContainer = document.querySelector(`#car_${car.id} .car-img`);
-    const carContainerWidth = carContainer.getBoundingClientRect().width;
+    const raceDistance = carContainer.getBoundingClientRect().width;
+    let carSpeed = (car.velocity * raceDistance) / car.distance;
     const carImg = carContainer.querySelector("i");
-    const raceDistance = carContainerWidth;
-    const carSpeed = (car.velocity * carContainerWidth) / car.distance;
     let carPosition = 0;
+    // Create animation
     let carPositionId = setInterval(() => {
       if (carPosition >= raceDistance) {
+        // Stop the animation when car reaches the end of the layout
         return clearInterval(carPositionId);
       } else {
         carPosition += carSpeed;

@@ -11,6 +11,14 @@ async function displayGarage() {
 }
 displayGarage();
 
+//import winners view
+// import { WinnersView } from "./src/views/winners.js";
+// const winnersView = new WinnersView();
+// async function displayWinners() {
+//   await winnersView.init();
+// }
+// displayWinners();
+
 //add a car
 const addCar = document.getElementById("addCar");
 const addCarName = addCar.querySelector(".modify_car_name");

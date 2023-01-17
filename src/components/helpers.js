@@ -9,6 +9,7 @@ export async function getCars(httpParams) {
   });
 }
 
+// Add a new car
 export async function createCar(car) {
   return fetch(baseUrl, {
     method: "POST",
@@ -19,6 +20,7 @@ export async function createCar(car) {
   }).then((res) => res.json());
 }
 
+// Update car
 export async function updateCar(car) {
   return fetch(`${baseUrl}/${car.id}`, {
     method: "PUT",
@@ -26,6 +28,7 @@ export async function updateCar(car) {
   }).then((res) => res.json());
 }
 
+// Delete car
 export async function deleteCar(car) {
   return fetch(`${baseUrl}/${car.id}`, {
     method: "DELETE",
@@ -45,7 +48,6 @@ export async function startCar(httpParams) {
       "Content-Type": "application/json",
     },
   }).then((res) => {
-    console.log(res);
     return res.json();
   });
 }
