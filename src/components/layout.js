@@ -76,7 +76,7 @@ export default class AppLayout {
     addCarColor.value = "#F5EACD";
     const addCar = document.createElement("button");
     addCar.id = "addCarBtn";
-    addCar.innerHTML = "Add car";
+    addCar.innerHTML = "Add a new car";
     addCarDiv.append(addCarName, addCarColor, addCar);
     garageControls.append(addCarDiv);
 
@@ -91,7 +91,7 @@ export default class AppLayout {
     updateCarColor.value = "#F5EACD";
     const updateCar = document.createElement("button");
     updateCar.id = "updateCarBtn";
-    updateCar.innerHTML = "update car";
+    updateCar.innerHTML = "Update the car";
     updateCarDiv.append(updateCarName, updateCarColor, updateCar);
     garageControls.append(updateCarDiv);
 
@@ -104,7 +104,7 @@ export default class AppLayout {
     //create 3 buttons for the buttons section
     const generateBtn = document.createElement("button");
     generateBtn.id = "generateBtn";
-    generateBtn.innerHTML = "Generate Random Cars";
+    generateBtn.innerHTML = "Generate 10 Random Cars";
     const raceBtn = document.createElement("button");
     raceBtn.id = "raceBtn";
     raceBtn.innerHTML = "Start Race!";

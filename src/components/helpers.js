@@ -16,26 +16,44 @@ export async function createCar(car) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(car),
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .catch((error) => {
+      console.error(`Error creating car: ${error}`);
+      throw error;
+    });
 }
 
 export async function updateCar(car) {
   return fetch(`${baseUrl}/${car.id}`, {
     method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(car),
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .catch((error) => {
+      console.error(`Error updating car: ${error}`);
+      throw error;
+    });
 }
 
 export async function deleteCar(car) {
   return fetch(`${baseUrl}/${car.id}`, {
     method: "DELETE",
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .catch((error) => {
+      console.error(`Error deleting car: ${error}`);
+      throw error;
+    });
 }
 
 // ENGINE API //
 const engineURL = "http://127.0.0.1:3000/engine";
 
-// Starts or stops engine of specified car, and returns it's actual velocity and distance.
+// Start or stop engine of specified car, and return it's actual velocity and distance
 export async function startCar(httpParams) {
   let url = engineURL;
   if (httpParams) url += `?${httpParams}`;
@@ -50,7 +68,7 @@ export async function startCar(httpParams) {
   });
 }
 
-// Switches engine of specified car to drive mode and finishes with success message or fails with 500 error.
+// Switch engine of specified car to drive mode and finish with success message or fail with 500 error
 export async function driveCar(httpParams) {
   let url = engineURL;
   if (httpParams) url += `?${httpParams}`;
