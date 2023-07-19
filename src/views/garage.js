@@ -90,6 +90,7 @@ export default class GarageView extends PaginationView {
       this.startOrStopCarEngine(car);
     });
 
+    //FIX IT
     let carUpdate = document.createElement("button");
     carUpdate.className = "car_update";
     carUpdate.innerHTML = "update";
@@ -252,16 +253,47 @@ export default class GarageView extends PaginationView {
     const carContainerWidth = carContainer.getBoundingClientRect().width;
     const carImg = carContainer.querySelector("i");
     const raceDistance = carContainerWidth;
-    const carSpeed = (car.velocity * carContainerWidth) / car.distance;
-    let carPosition = 0;
-    let carPositionId = setInterval(() => {
+    let startTime = null;
+
+    function animateCar(timestamp) {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const carSpeed = (car.velocity * carContainerWidth) / car.distance;
+      const carPosition = Math.min(carSpeed * elapsed, raceDistance);
+      carImg.style.marginLeft = `${carPosition}px`;
       if (carPosition >= raceDistance) {
-        return clearInterval(carPositionId);
-      } else {
-        carPosition += carSpeed;
-        carImg.style.marginLeft = `${carPosition}px`;
+        return;
       }
-    }, 1);
-    return carPositionId;
+      requestAnimationFrame(animateCar);
+    }
+
+    requestAnimationFrame(animateCar);
+    // let carPosition = 0;
+    // let carPositionId = setInterval(() => {
+    //   if (carPosition >= raceDistance) {
+    //     return clearInterval(carPositionId);
+    //   } else {
+    //     carPosition += carSpeed;
+    //     carImg.style.marginLeft = `${carPosition}px`;
+    //   }
+    // }, 1);
+    // return carPositionId;
   }
 }
+
+// function changeCarStatus( {
+//   //if start pressed status = started
+//   // if server response 200 status = drive
+//   //if server response 500 or stop pressed status = stopped
+// })
+
+// function startCarDrive() {
+//   // changeCarStatus();
+//   // moveCar()
+// }
+
+// function handleCarStatus() {
+// // if status is started call the startCarDrive()
+// // if status is drive do nothing else
+// // if status stopped stop the function startCarDrive() ??
+// }

@@ -26,11 +26,11 @@ export async function createCar(car) {
 
 export async function updateCar(car) {
   return fetch(`${baseUrl}/${car.id}`, {
-    method: "PUT",
+    method: "PATCH",
+    body: JSON.stringify(car),
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(car),
   })
     .then((res) => res.json())
     .catch((error) => {
