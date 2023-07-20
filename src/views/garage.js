@@ -1,3 +1,5 @@
+// DEPENDENCIES
+
 import { PaginationView } from "./pagination.js";
 import {
   getCars,
@@ -9,6 +11,7 @@ import {
 } from "../components/helpers.js";
 import { Car } from "../models/car.js";
 
+// VIEW
 export default class GarageView extends PaginationView {
   constructor() {
     super(1, 7);
@@ -19,12 +22,7 @@ export default class GarageView extends PaginationView {
   async init() {
     await this.countCars();
     await this.fetchCars();
-    await this.renderView();
-  }
-
-  renderView() {
-    this.displayGarageInfo();
-    this.displayCars();
+    this.renderView();
   }
 
   async countCars() {
@@ -46,6 +44,11 @@ export default class GarageView extends PaginationView {
     } catch (error) {
       console.log("Error fetching cars!", error);
     }
+  }
+
+  renderView() {
+    this.displayGarageInfo();
+    this.displayCars();
   }
 
   async displayGarageInfo() {
@@ -70,40 +73,31 @@ export default class GarageView extends PaginationView {
     carDiv.className = "car_div";
     carDiv.id = `car_${car.id}`;
 
+    // car info
     let carDivTop = document.createElement("div");
     carDivTop.className = "car_div__top";
     let carName = document.createElement("h3");
     carName.className = "car_name";
     carName.innerHTML = `${car.name}`;
 
-    let carRun = document.createElement("button");
-    carRun.innerHTML = '<i class="fa-solid fa-play"></i>';
-    carRun.addEventListener("click", () => {
-      car.status = "started";
-      this.startOrStopCarEngine(car);
-    });
+    // car control buttons
+    let carStart = document.createElement("button");
+    carStart.className = "car_start";
+    carStart.innerHTML = '<i class="fa-solid fa-play"></i>';
 
     let carStop = document.createElement("button");
+    carStop.className = "car_stop";
     carStop.innerHTML = '<i class="fa-solid fa-stop"></i>';
-    carStop.addEventListener("click", () => {
-      car.status = "stopped";
-      this.startOrStopCarEngine(car);
-    });
 
-    //FIX IT
     let carUpdate = document.createElement("button");
     carUpdate.className = "car_update";
     carUpdate.innerHTML = "update";
-    carUpdate.addEventListener("click", () => this.updateCar(car));
 
     let carRemove = document.createElement("button");
     carRemove.className = "car_remove";
     carRemove.innerHTML = "remove";
-    carRemove.addEventListener("click", () => this.deleteCar(car));
-    carDivTop.append(carName, carRun, carStop, carUpdate, carRemove);
 
-    carRemove.dataset.car = JSON.stringify(car);
-
+    // car image
     let carDivBody = document.createElement("div");
     carDivBody.className = "car_div__body";
     // let carImg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -124,16 +118,56 @@ export default class GarageView extends PaginationView {
     carImg.className = "car-img";
     carImg.innerHTML = '<i class="fa-solid fa-car-side"></i>';
     carImg.style.color = `${car.color}`;
-    carDivBody.append(carImg);
 
+    // wtf is this
     let carDivBottom = document.createElement("div");
     carDivBottom.className = "car_div__bottom";
 
+    // car append to car div
+    carDivTop.append(carName, carStart, carStop, carUpdate, carRemove);
+    carDivBody.append(carImg);
     carDiv.append(carDivTop, carDivBody, carDivBottom);
+
+    this.addCarEventListeners(car, carDiv);
+
     const displayCars = document.querySelector(".garage_cars");
     displayCars.appendChild(carDiv);
   }
 
+  // EVENT LISTENERS
+
+  addCarEventListeners(car, carDiv) {
+    const carStart = carDiv.querySelector(".car_start");
+    const carStop = carDiv.querySelector(".car_stop");
+    const carUpdate = carDiv.querySelector(".car_update");
+    const carRemove = carDiv.querySelector(".car_remove");
+
+    carStart.addEventListener("click", () => {
+      changeCarStatus(car, "started");
+      this.startOrStopCarEngine(car);
+    });
+
+    carStop.addEventListener("click", () => {
+      if (car.status !== "stopped") {
+        changeCarStatus(car, "stopped");
+        this.startOrStopCarEngine(car);
+        stopCarAnimation(car);
+      }
+    });
+
+    carUpdate.addEventListener("click", () => {
+      updateCar(car);
+    });
+
+    carRemove.addEventListener("click", () => {
+      this.deleteCar(car);
+      carRemove.dataset.car = JSON.stringify(car);
+    });
+  }
+
+  ////////////////////////////////////
+  // move these to the new js file //
+  //////////////////////////////////
   async addCar(car) {
     try {
       await createCar(car);
@@ -209,29 +243,11 @@ export default class GarageView extends PaginationView {
     return randomCars;
   }
 
-  async startOrStopCarEngine(car) {
-    try {
-      const httpParams = new URLSearchParams();
-      httpParams.append("id", car.id);
-      httpParams.append("status", car.status);
-      // Add car class with status
-      const { velocity, distance } = await startCar(httpParams);
-      console.log(`${car.name} velocity: ${velocity} - distance: ${distance}`);
-      // Add velocity and Distance to car as well
-      car.velocity = velocity;
-      car.distance = distance;
-      this.startCarDriving(car);
-      if (car.status !== "stopped") {
-        this.moveCar(car);
-      }
-    } catch (error) {
-      console.error("Error starting or stopping car engine!", error);
-    }
-  }
+  ////////////////////////////////
+  // these are for car controls //
+  ////////////////////////////////
 
   async startCarDriving(car) {
-    // Set car status to drive
-    car.status = "drive";
     try {
       const httpParams = new URLSearchParams();
       httpParams.append("id", car.id);
@@ -240,9 +256,13 @@ export default class GarageView extends PaginationView {
       // Set car status to stopped
       if (response.status === 500) {
         car.status = "stopped";
-        console.error("The car has stopped!", error);
+        console.log(car.status);
+        stopCarAnimation(car);
+      } else {
+        car.status = "drive";
+        console.log(car.status);
       }
-      console.log("Drive car " + car.name, response);
+      console.log(car.name, response);
     } catch (error) {
       console.error("Error starting car driving!", error);
     }
@@ -268,32 +288,122 @@ export default class GarageView extends PaginationView {
     }
 
     requestAnimationFrame(animateCar);
-    // let carPosition = 0;
-    // let carPositionId = setInterval(() => {
-    //   if (carPosition >= raceDistance) {
-    //     return clearInterval(carPositionId);
-    //   } else {
-    //     carPosition += carSpeed;
-    //     carImg.style.marginLeft = `${carPosition}px`;
-    //   }
-    // }, 1);
-    // return carPositionId;
+  }
+
+  // stopCarAnimation(car) {
+  //   const carContainer = document.querySelector(`#car_${car.id} .car-img`);
+  //   const carImg = carContainer.querySelector("i");
+  //   if (!startTime) startTime = timestamp;
+  //   const elapsed = timestamp - startTime;
+  //   const carSpeed = (car.velocity * carContainerWidth) / car.distance;
+  //   const carPosition = Math.min(carSpeed * elapsed, raceDistance);
+
+  //   // const currentMarginLeft = parseInt(carImg.style.marginLeft, carPosition);
+  //   cancelAnimationFrame(car.animationRequestId);
+  //   carImg.style.marginLeft = `${carPosition}px`;
+  // }
+
+  async startOrStopCarEngine(car) {
+    try {
+      const httpParams = new URLSearchParams();
+      httpParams.append("id", car.id);
+      httpParams.append("status", car.status);
+      console.log(car.status);
+      // Add car class with status
+      const { velocity, distance } = await startCar(httpParams);
+      console.log(`${car.name} velocity: ${velocity} - distance: ${distance}`);
+      // Add velocity and Distance to car as well
+      car.velocity = velocity;
+      car.distance = distance;
+
+      if (car.status === "stopped") {
+        this.stopCarAnimation(car);
+      } else {
+        car.status = "drive";
+        this.startCarDriving(car);
+        this.moveCar(car);
+      }
+    } catch (error) {
+      console.error("Error starting or stopping car engine!", error);
+    }
   }
 }
 
-// function changeCarStatus( {
-//   //if start pressed status = started
-//   // if server response 200 status = drive
-//   //if server response 500 or stop pressed status = stopped
-// })
+// REFACTORING THE CAR CONTROL FUNCTIONS HERE
+// Function to change car status
+function changeCarStatus(car, newStatus) {
+  car.status = newStatus;
+  if (newStatus === "drive" || newStatus === "started") {
+    startCarAnimation(car);
+  } else if (newStatus === "stopped") {
+    stopCarAnimation(car);
+  }
+}
 
-// function startCarDrive() {
-//   // changeCarStatus();
-//   // moveCar()
-// }
+// Function to start car animation
+function startCarAnimation(car) {
+  const carContainer = document.querySelector(`#car_${car.id} .car-img`);
+  const carContainerWidth = carContainer.getBoundingClientRect().width;
+  const carImg = carContainer.querySelector("i");
+  const raceDistance = carContainerWidth;
+  let startTime = null;
 
-// function handleCarStatus() {
-// // if status is started call the startCarDrive()
-// // if status is drive do nothing else
-// // if status stopped stop the function startCarDrive() ??
-// }
+  function animateCar(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const carSpeed = (car.velocity * carContainerWidth) / car.distance;
+    const carPosition = Math.min(carSpeed * elapsed, raceDistance);
+    carImg.style.marginLeft = `${carPosition}px`;
+    if (carPosition >= raceDistance) {
+      return;
+    }
+    requestAnimationFrame(animateCar);
+  }
+  requestAnimationFrame(animateCar);
+}
+
+// Function to stop car animation
+function stopCarAnimation(car) {
+  const carContainer = document.querySelector(`#car_${car.id} .car-img`);
+  const carImg = carContainer.querySelector("i");
+  let startTime = null;
+  let carContainerWidth = carContainer.getBoundingClientRect().width;
+  let raceDistance = carContainerWidth;
+  let carSpeed = (car.velocity * carContainerWidth) / car.distance;
+  let elapsed = 0;
+
+  function animateCar(timestamp) {
+    if (!startTime) startTime = timestamp;
+    elapsed = timestamp - startTime;
+    const carPosition = Math.min(carSpeed * elapsed, raceDistance);
+    carImg.style.marginLeft = `${carPosition}px`;
+    if (carPosition >= raceDistance) {
+      return;
+    }
+    requestAnimationFrame(animateCar);
+  }
+
+  cancelAnimationFrame(car.animationRequestId);
+
+  // Calculate the remaining distance the car needs to travel
+  const remainingDistance = raceDistance - carSpeed * elapsed;
+  carImg.style.marginLeft = `${remainingDistance}px`;
+}
+
+// Function to handle server request and update car status
+async function startCarDriving(car) {
+  try {
+    const httpParams = new URLSearchParams();
+    httpParams.append("id", car.id);
+    httpParams.append("status", car.status);
+    const response = await driveCar(httpParams);
+    if (response.status === 200) {
+      changeCarStatus(car, "drive");
+    } else if (response.status === 500) {
+      changeCarStatus(car, "stopped");
+    }
+    console.log(car.name, response);
+  } catch (error) {
+    console.error("Error starting car driving!", error);
+  }
+}
